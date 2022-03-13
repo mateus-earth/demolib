@@ -200,6 +200,7 @@ function random_int(min, max)
 //------------------------------------------------------------------------------
 function __mulberry32(a)
 {
+
     // Reference:
     //   https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
     return function() {
@@ -211,13 +212,40 @@ function __mulberry32(a)
 }
 
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
+// Noise                                                                      //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+function set_noise_seed(seed) 
+{
+    if(is_null_or_undefined(seed)) { 
+        seed = random_float();
+    }
+
+    demolib_verbose("noise_seed:", seed);
+    noise.seed(Math.random());
+}
+
+//------------------------------------------------------------------------------
+function perlin_noise(x, y, z) 
+{
+
+    return noise.simplex2(x, y);
+}
+
+//----------------------------------------------------------------------------//
+//                                                                            //
 // Input                                                                      //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 let __mouse_x = 0;
 let __mouse_y = 0;
 let __mouse_left_pressed = false;
+
 let __mouse_wheel_x = 0;
 let __mouse_wheel_y = 0;
 
