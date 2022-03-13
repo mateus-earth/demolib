@@ -13,10 +13,12 @@ const demolib_verbose = echo;
 
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Loop                                                                       //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-const MIN_FRAME_RATE = 1.0/30.0;
+const MIN_FRAME_RATE = (1.0 / 30.0);
 
 //------------------------------------------------------------------------------
 let __time_total = 0;
@@ -33,8 +35,11 @@ function start_draw_loop(user_draw_func)
     canvas_render();
 }
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Canvas Functions                                                           //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 let __canvas  = null;
@@ -51,12 +56,9 @@ function set_main_canvas(canvas)
     __context = canvas.getContext("2d");
 }
 
-
 //------------------------------------------------------------------------------
 function begin_draw() { __context.save   (); }
 function end_draw  () { __context.restore(); }
-
-
 
 //------------------------------------------------------------------------------
 function translate_canvas_to_center()
@@ -106,6 +108,10 @@ function set_canvas_stroke(color)
     __context.strokeStyle = color;
 }
 
+//
+// Fill Functions 
+//
+
 //------------------------------------------------------------------------------
 function fill_circle(x, y, r)
 {
@@ -123,6 +129,10 @@ function fill_arc(x, y, r, sa, ea, close)
     __context.fill();
 }
 
+//
+// Draw Functions
+//
+
 //------------------------------------------------------------------------------
 function draw_point(x, y, size)
 {
@@ -132,6 +142,7 @@ function draw_point(x, y, size)
     __context.stroke();
     __context.fill();
 }
+
 //------------------------------------------------------------------------------
 function draw_line(x1, y1, x2, y2)
 {
@@ -317,8 +328,8 @@ function install_input_handlers(element, handlers)
         }
      });
 
-     // Mouse Whell
-     element.addEventListener("wheel", (ev) =>  {
+    // Mouse Whell
+    element.addEventListener("wheel", (ev) =>  {
         __mouse_wheel_x += ev.wheelDeltaX;
         __mouse_wheel_y += ev.wheelDeltaY;
 
@@ -327,15 +338,18 @@ function install_input_handlers(element, handlers)
         if(handlers && handlers.on_mouse_wheel) {
             handlers.on_mouse_wheel(__mouse_wheel_x, __mouse_wheel_y, ev);
         }
-     });
+    });
 }
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Math                                                                       //
+//                                                                            //
 //----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
 const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
-
 
 //------------------------------------------------------------------------------
 function distance(x1, y1, x2, y2)
@@ -393,7 +407,9 @@ function clamp(value, min, max) {
 
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Vector                                                                     //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 function add_vec2(a, b)         { return make_vec2(a.x + b.x, a.y - b.y); }
@@ -451,30 +467,7 @@ function make_vec2_unit(vec2)
 }
 
 
-
-//------------------------------------------------------------------------------
-function Vector_Add(a, b)
-{
-    return make_vec2(a.x + b.x, a.y + b.y);
-}
-
-//------------------------------------------------------------------------------
-function Vector_Sub(a, b)
-{
-    return make_vec2(a.x - b.x, a.y - b.y);
-}
-
-
-
-
-
 /*
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 function Canvas_Resize(width, height)
@@ -602,15 +595,6 @@ function Canvas_SetStrokeSize(size)
     __context.lineWidth = size;
 }
 
-//------------------------------------------------------------------------------
-function Canvas_DrawPoint(x, y, size)
-{
-    __context.beginPath();
-        __context.arc(x, y, size, 0, 2 * Math.PI, true);
-    __context.closePath();
-    __context.stroke();
-    __context.fill();
-}
 
 
 //------------------------------------------------------------------------------
