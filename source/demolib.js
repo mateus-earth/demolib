@@ -124,6 +124,15 @@ function fill_arc(x, y, r, sa, ea, close)
 }
 
 //------------------------------------------------------------------------------
+function draw_point(x, y, size)
+{
+    __context.beginPath();
+        __context.arc(x, y, size, 0, 2 * Math.PI, true);
+    __context.closePath();
+    __context.stroke();
+    __context.fill();
+}
+//------------------------------------------------------------------------------
 function draw_line(x1, y1, x2, y2)
 {
     __context.beginPath();
