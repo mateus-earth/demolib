@@ -223,10 +223,12 @@ let __mouse_wheel_y = 0;
 
 //------------------------------------------------------------------------------
 function get_mouse_x() { return __mouse_x; }
-function get_mouse_y() { return __mouse_x; }
-function is_mouse_pressed(button_no) { return false; } // @todo
+function get_mouse_y() { return __mouse_y; }
+
 function get_mouse_wheel_x() { return __mouse_wheel_x; }
-function get_mouse_wheel_y() { return __mouse_wheel_x; }
+function get_mouse_wheel_y() { return __mouse_wheel_y; }
+
+function is_mouse_pressed(button_no) { return false; } // @todo
 
 
 //------------------------------------------------------------------------------
