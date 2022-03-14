@@ -252,10 +252,10 @@ function set_noise_seed(seed)
 }
 
 //------------------------------------------------------------------------------
-function perlin_noise(x, y, z) 
+function perlin_noise(x, y, z = 0) 
 {
 
-    return noise.simplex2(x, y);
+    return Math.abs(noise.simplex3(x, y, z));
 }
 
 //----------------------------------------------------------------------------//
@@ -357,6 +357,10 @@ const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
 
 //------------------------------------------------------------------------------
+function to_degrees(r) { return r * (180 / MATH_PI); } 
+function to_radians(d) { return d * (MATH_PI / 180); } 
+
+//------------------------------------------------------------------------------
 function distance(x1, y1, x2, y2)
 {
     const x = (x2 - x1);
@@ -387,7 +391,7 @@ function denormalize(normalized, min, max)
 }
 
 //------------------------------------------------------------------------------
-function map_values(value, start1, end1, start2, end2)
+function map(value, start1, end1, start2, end2)
 {
     if(start1 == end1 || start2 == end2) {
         return end2;
@@ -403,8 +407,17 @@ function map_values(value, start1, end1, start2, end2)
     );
 }
 
+
 //------------------------------------------------------------------------------
-function clamp(value, min, max) {
+function lerp(t, v0, v1) 
+{
+    return (1 - t) * v0 + t * v1;
+}
+
+
+//------------------------------------------------------------------------------
+function clamp(value, min, max) 
+{
     if(value < min) return min;
     if(value > max) return max;
     return value;
