@@ -77,7 +77,7 @@ function translate_canvas_to_center()
 //------------------------------------------------------------------------------
 function clear_canvas(color)
 {
-    if(!color) {
+    if(is_null_or_undefined(color)) {
         color = "black";
     }
 
@@ -102,16 +102,10 @@ function clear_canvas_rect(x, y, w, h, color)
 }
 
 //------------------------------------------------------------------------------
-function set_canvas_fill(color)
-{
-    __context.fillStyle = color;
-}
+function set_canvas_fill      (color) { __context.fillStyle   = color; }
+function set_canvas_stroke    (color) { __context.strokeStyle = color; }
+function set_canvas_line_width(width) { __context.lineWidth   = width; }
 
-//------------------------------------------------------------------------------
-function set_canvas_stroke(color)
-{
-    __context.strokeStyle = color;
-}
 
 //
 // Fill Functions 
