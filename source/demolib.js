@@ -12,6 +12,26 @@ function is_null_or_undefined(v)
 const echo = console.log
 const demolib_verbose = echo;
 
+//
+// Min_Max
+//
+
+//------------------------------------------------------------------------------
+class Min_Max 
+{ 
+    constructor(min, max) 
+    { 
+        this.min = min;
+        this.max = max;
+    }
+    
+    random_int  () { return random_int  (this.min, this.max); }
+    random_float() { return random_float(this.min, this.max); }
+}
+
+//------------------------------------------------------------------------------
+function make_min_max(min, max) { return new Min_Max(min, max); }
+
 
 //----------------------------------------------------------------------------//
 //                                                                            //
