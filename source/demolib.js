@@ -217,6 +217,19 @@ function random_int(min, max)
 }
 
 //------------------------------------------------------------------------------
+function random_bool() 
+{ 
+    return Math.random() > 0.5;
+}
+
+//------------------------------------------------------------------------------
+function random_element(collection) 
+{
+    const i = random_int(collection.length);
+    return collection[i];
+}
+
+//------------------------------------------------------------------------------
 function __mulberry32(a)
 {
 
