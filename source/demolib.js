@@ -1,6 +1,8 @@
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Utils                                                                      //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 function is_null_or_undefined(v)
@@ -9,7 +11,7 @@ function is_null_or_undefined(v)
 }
 
 //------------------------------------------------------------------------------
-const echo = console.log
+const echo            = console.log
 const demolib_verbose = echo;
 
 //
@@ -44,8 +46,8 @@ const MIN_FRAME_RATE = (1.0 / 30.0);
 //------------------------------------------------------------------------------
 let __time_total = 0;
 let __time_delta = 0;
-let __time_prev = 0;
-let __time_now  = 0;
+let __time_prev  = 0;
+let __time_now   = 0;
 
 let __user_draw_func = null;
 
@@ -226,7 +228,7 @@ function random_float(min, max)
         min = 0;
     }
 
-    const value = __rnd_gen();
+    const value = Math.random();
     return min + (value * (max - min));
 }
 
@@ -248,6 +250,7 @@ function random_element(collection)
     const i = random_int(collection.length);
     return collection[i];
 }
+
 
 //------------------------------------------------------------------------------
 function __mulberry32(a)
