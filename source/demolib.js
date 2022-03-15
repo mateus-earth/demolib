@@ -51,6 +51,9 @@ let __canvas  = null;
 let __context = null;
 
 //------------------------------------------------------------------------------
+function get_context() { return __context; }
+
+//------------------------------------------------------------------------------
 function get_canvas_width ()  { return __canvas.width;  }
 function get_canvas_height()  { return __canvas.height; }
 
