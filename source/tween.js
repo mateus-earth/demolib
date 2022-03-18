@@ -519,7 +519,28 @@ class Tween
 
     //
     // Easings
-    // 
+    //
+
+    //--------------------------------------------------------------------------
+    static get_all_easings()
+    {
+        const arr = [];
+
+        const mode_keys = Object.keys(Tween.Easing);
+        for(let i = 0; i < mode_keys.length; ++i) {
+            const mode_key = mode_keys[i];
+            const mode     = Tween.Easing[mode_key];
+
+            const easing_keys = Object.keys(mode);
+            for(let j = 0; j < easing_keys.length; ++j) {
+                const easing_key = easing_keys[j];
+                const easing     = mode[easing_key];
+                arr.push(easing);
+            }
+        }
+
+        return arr;
+    }
 
     //--------------------------------------------------------------------------
     static get_random_easing()
