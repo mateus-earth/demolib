@@ -92,7 +92,7 @@ class Tween_Group
     }
 
     //--------------------------------------------------------------------------
-    update(delta_time)
+    update(delta_time = get_delta_time())
     {
         if(this._completed) {
             return;
