@@ -19,16 +19,32 @@ const demolib_verbose = echo;
 //
 
 //------------------------------------------------------------------------------
-class Min_Max 
-{ 
-    constructor(min, max) 
-    { 
+class Min_Max
+{
+    constructor(min, max)
+    {
         this.min = min;
         this.max = max;
     }
-    
+
     random_int  () { return random_int  (this.min, this.max); }
     random_float() { return random_float(this.min, this.max); }
+
+    random_int_without(k = null)
+    {
+        let v = null;
+        do { v = random_int(this.min, this.max); } while(v == k);
+        return v;
+    }
+
+    random_float_without(k = null)
+    {
+        let v = null;
+        do { v = random_float(this.min, this.max); } while(v == k);
+        return v;
+    }
+
+    in_range(v) { return v >= this.min && v < this.max; }
 }
 
 //------------------------------------------------------------------------------
