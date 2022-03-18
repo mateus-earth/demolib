@@ -133,12 +133,19 @@ class Tween
 {
     //
     // Factory Functions
-    // 
+    //
 
     //--------------------------------------------------------------------------
-    static create(duration)
+    static create(duration, from = {v: 0}, to = {v: 1})
     {
-        return new Tween(duration);
+        const tween = new Tween(duration);
+        if(!is_null_or_undefined(from)) {
+            tween.from(from);
+        }
+        if(!is_null_or_undefined(to)) {
+            tween.to(to);
+        }
+        return tween;
     }
 
     //--------------------------------------------------------------------------
