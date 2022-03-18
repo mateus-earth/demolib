@@ -244,7 +244,7 @@ function random_float(min, max)
         min = 0;
     }
 
-    const value = Math.random();
+    const value = Math.random(); // @XXX use our random
     return min + (value * (max - min));
 }
 
@@ -255,9 +255,9 @@ function random_int(min, max)
 }
 
 //------------------------------------------------------------------------------
-function random_bool() 
-{ 
-    return Math.random() > 0.5;
+function random_bool()
+{
+    return Math.random() > 0.5; // @XXX use our random
 }
 
 //------------------------------------------------------------------------------
