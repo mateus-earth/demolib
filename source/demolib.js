@@ -413,6 +413,7 @@ const MATH_2PI = MATH_PI * 2;
 //------------------------------------------------------------------------------
 function to_degrees(r) { return r * (180 / MATH_PI); } 
 function to_radians(d) { return d * (MATH_PI / 180); } 
+const    to_int        = Math.trunc;
 
 //------------------------------------------------------------------------------
 function distance(x1, y1, x2, y2)
