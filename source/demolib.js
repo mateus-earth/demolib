@@ -613,7 +613,7 @@ function easing_elastic_out(k) {
     if(k === 1) { return 1; }
     return Math.pow(2, -10 * k) * Math.sin((k - 0.1) * 5 * Math.PI) + 1;
 }
-function easing_elastic_inout(k) {
+function easing_elastic_in_out(k) {
     if(k === 0) { return 0; }
     if(k === 1) { return 1; }
     k *= 2;
@@ -691,7 +691,7 @@ const Easings = {
     elastic: {
         in:    easing_elastic_in,
         out:   easing_elastic_out,
-        inout: easing_elastic_inout,
+        inout: easing_elastic_in_out,
     },
     back: {
          in:     easing_back_in,
@@ -737,9 +737,9 @@ function get_random_easing()
 //--------------------------------------------------------------------------
 function get_random_easing_type()
 {
-    const keys = Object.keys(Easing);
+    const keys = Object.keys(Easings);
     const key  = random_element(keys);
-    return Easing[key];
+    return Easings[key];
 }
 
 //--------------------------------------------------------------------------
