@@ -464,6 +464,9 @@ function map(value, start1, end1, start2, end2)
 
 
 //------------------------------------------------------------------------------
+function map_sin(value, start2, end2) { return map(value, -1, +1, start2, end2) };
+function map_cos(value, start2, end2) { return map(value, -1, +1, start2, end2) };
+
 function lerp(t, v0, v1) 
 {
     return (1 - t) * v0 + t * v1;
