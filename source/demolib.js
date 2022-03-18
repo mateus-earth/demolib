@@ -149,7 +149,7 @@ function set_canvas_line_width(width) { __context.lineWidth   = width; }
 
 
 //
-// Fill Functions 
+// Fill Functions
 //
 
 //------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ function random_bool()
 }
 
 //------------------------------------------------------------------------------
-function random_element(collection) 
+function random_element(collection)
 {
     const i = random_int(collection.length);
     return collection[i];
@@ -296,9 +296,9 @@ function __mulberry32(a)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-function set_noise_seed(seed) 
+function set_noise_seed(seed)
 {
-    if(is_null_or_undefined(seed)) { 
+    if(is_null_or_undefined(seed)) {
         seed = random_float();
     }
 
@@ -411,8 +411,8 @@ const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
 
 //------------------------------------------------------------------------------
-function to_degrees(r) { return r * (180 / MATH_PI); } 
-function to_radians(d) { return d * (MATH_PI / 180); } 
+function to_degrees(r) { return r * (180 / MATH_PI); }
+function to_radians(d) { return d * (MATH_PI / 180); }
 const    to_int        = Math.trunc;
 
 //------------------------------------------------------------------------------
@@ -467,14 +467,15 @@ function map(value, start1, end1, start2, end2)
 function map_sin(value, start2, end2) { return map(value, -1, +1, start2, end2) };
 function map_cos(value, start2, end2) { return map(value, -1, +1, start2, end2) };
 
-function lerp(t, v0, v1) 
+//------------------------------------------------------------------------------
+function lerp(t, v0, v1)
 {
     return (1 - t) * v0 + t * v1;
 }
 
 
 //------------------------------------------------------------------------------
-function clamp(value, min, max) 
+function clamp(value, min, max)
 {
     if(value < min) return min;
     if(value > max) return max;
