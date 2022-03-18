@@ -36,7 +36,7 @@ class Tween_Group
             Tween_Group._default_group = new Tween_Group("Tween_Group_Default_Group");
             Tween_Group._default_group._remove_on_completion = false;
             Tween_Group._tagged_groups.set(
-                Tween_Group._default_group.group_name, 
+                Tween_Group._default_group.group_name,
                 Tween_Group._default_group
             );
         }
@@ -160,7 +160,7 @@ class Tween
     {
         return new Tween(duration, group);
     }
-    
+
     //--------------------------------------------------------------------------
     static _next_id()
     {
@@ -171,11 +171,11 @@ class Tween
         return this.s_next_id++;
     }
 
-    
-    
-    
+
+
+
     //
-    // 
+    //
     //
 
     //--------------------------------------------------------------------------
@@ -214,12 +214,12 @@ class Tween
         this._group = group || Tween_Group.get_default_tween_group();
         this._id    = Tween._next_id();
     };
-   
+
 
     //
     // Getters
     //
-    
+
     //--------------------------------------------------------------------------
     get_value  () { return this._object;     }
     get_ratio  () { return this._ratio       }
@@ -241,7 +241,7 @@ class Tween
         return this;
     }
 
-    duration(d) 
+    duration(d)
     {
         this._duration = d;
         return this;
@@ -283,9 +283,9 @@ class Tween
         return this;
     }
 
-    update(delta_time)
+    update(delta_time = get_delta_time())
     {
-        if(!this.is_playing) { 
+        if(!this._is_playing) {
             return;
         }
 
@@ -342,7 +342,7 @@ class Tween
         }
 
         if(this._on_update_callback !== null) {
-            this._on_update_callback(delta_time, this._object);
+            this._on_update_callback(this._object, delta_time);
         }
 
         if(this._ratio >= 1) {
@@ -468,11 +468,11 @@ class Tween
 
 
     //
-    // Callbacks 
+    // Callbacks
     //
 
     //--------------------------------------------------------------------------
-    on_group_completed(callback) 
+    on_group_completed(callback)
     {
         // @XXX(stdmatt): Hacky... 8/3/2021, 7:06:21 AM
         if(!this._group._on_complete_callback) {
@@ -515,7 +515,7 @@ class Tween
         this._on_stop_callback = callback;
         return this;
     }
-    
+
 
     //
     // Easings
@@ -551,16 +551,16 @@ class Tween
     }
 
     //--------------------------------------------------------------------------
-    static get_random_easing_type() 
-    { 
+    static get_random_easing_type()
+    {
         const keys = Object.keys(Tween.Easing);
         const key  = random_element(keys);
         return Tween.Easing[key];
-    } 
+    }
 
     //--------------------------------------------------------------------------
-    static get_random_easing_mode(easing) 
-    {    
+    static get_random_easing_mode(easing)
+    {
         const keys = Object.keys(easing);
         const key  = random_element(keys);
         return easing[key];
