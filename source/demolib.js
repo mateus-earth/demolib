@@ -267,6 +267,12 @@ function random_element(collection)
     return collection[i];
 }
 
+//------------------------------------------------------------------------------
+function random_signed(v)
+{
+    return Math.abs(v) * (random_bool() ? -1 : 1);
+}
+
 
 //------------------------------------------------------------------------------
 function __mulberry32(a)
