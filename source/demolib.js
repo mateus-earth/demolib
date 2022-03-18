@@ -307,9 +307,8 @@ function set_noise_seed(seed)
 }
 
 //------------------------------------------------------------------------------
-function perlin_noise(x, y, z = 0) 
+function perlin_noise(x, y = 0, z = 0)
 {
-
     return Math.abs(noise.simplex3(x, y, z));
 }
 
