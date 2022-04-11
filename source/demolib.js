@@ -1,5 +1,8 @@
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Utils                                                                      //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 function is_null_or_undefined(v)
@@ -10,10 +13,13 @@ function is_null_or_undefined(v)
 //------------------------------------------------------------------------------
 const echo = console.log;
 
+const demolib_verbose = echo;
+
 
 //
-// Min Max
+// Min_Max
 //
+
 //------------------------------------------------------------------------------
 class Min_Max
 {
@@ -25,6 +31,22 @@ class Min_Max
 
     random_int  () { return random_int  (this.min, this.max); }
     random_float() { return random_float(this.min, this.max); }
+
+    random_int_without(k = null)
+    {
+        let v = null;
+        do { v = random_int(this.min, this.max); } while(v == k);
+        return v;
+    }
+
+    random_float_without(k = null)
+    {
+        let v = null;
+        do { v = random_float(this.min, this.max); } while(v == k);
+        return v;
+    }
+
+    in_range(v) { return v >= this.min && v < this.max; }
 }
 
 //------------------------------------------------------------------------------
@@ -32,10 +54,12 @@ function make_min_max(min, max) { return new Min_Max(min, max); }
 
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Loop                                                                       //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-const MIN_FRAME_RATE = 1.0/30.0;
+const MIN_FRAME_RATE = (1.0 / 30.0);
 
 //------------------------------------------------------------------------------
 let __time_total = 0;
@@ -46,9 +70,8 @@ let __time_now   = 0;
 let __user_draw_func = null;
 
 //------------------------------------------------------------------------------
-function get_total_time() { return __time_total;  }
-function get_delta_time() { return __delta_total; }
-
+function get_total_time() { return __time_total; }
+function get_delta_time() { return __time_delta; }
 
 //------------------------------------------------------------------------------
 function start_draw_loop(user_draw_func)
@@ -57,8 +80,11 @@ function start_draw_loop(user_draw_func)
     canvas_render();
 }
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Canvas Functions                                                           //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 let __canvas  = null;
@@ -67,6 +93,7 @@ let __context = null;
 //------------------------------------------------------------------------------
 function get_canvas_width (s = 1)  { return __canvas.width  * s; }
 function get_canvas_height(s = 1)  { return __canvas.height * s; }
+function get_context() { return __context; }
 
 //------------------------------------------------------------------------------
 function set_main_canvas(canvas)
@@ -91,7 +118,7 @@ function translate_canvas_to_center()
 //------------------------------------------------------------------------------
 function clear_canvas(color)
 {
-    if(!color) {
+    if(is_null_or_undefined(color)) {
         color = "black";
     }
 
@@ -116,16 +143,14 @@ function clear_canvas_rect(x, y, w, h, color)
 }
 
 //------------------------------------------------------------------------------
-function set_canvas_fill(color)
-{
-    __context.fillStyle = color;
-}
+function set_canvas_fill      (color) { __context.fillStyle   = color; }
+function set_canvas_stroke    (color) { __context.strokeStyle = color; }
+function set_canvas_line_width(width) { __context.lineWidth   = width; }
 
-//------------------------------------------------------------------------------
-function set_canvas_stroke(color)
-{
-    __context.strokeStyle = color;
-}
+
+//
+// Fill Functions
+//
 
 //------------------------------------------------------------------------------
 function set_canvas_stroke_size(size)
@@ -147,6 +172,20 @@ function fill_arc(x, y, r, sa, ea, close)
         if(!is_null_or_undefined(close)) {
             __context.closePath();
         }
+    __context.fill();
+}
+
+//
+// Draw Functions
+//
+
+//------------------------------------------------------------------------------
+function draw_point(x, y, size)
+{
+    __context.beginPath();
+        __context.arc(x, y, size, 0, 2 * Math.PI, true);
+    __context.closePath();
+    __context.stroke();
     __context.fill();
 }
 
@@ -181,15 +220,21 @@ function canvas_render()
 
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Random                                                                     //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 let __rnd_gen = null;
+
+//------------------------------------------------------------------------------
 function set_random_seed(seed = null)
 {
     if(is_null_or_undefined(seed)) {
         seed = Date.now();
     }
+
+    demolib_verbose("random_seed:", seed);
     __rnd_gen = __mulberry32(seed);
 }
 
@@ -204,7 +249,7 @@ function random_float(min, max)
         min = 0;
     }
 
-    const value = __rnd_gen();
+    const value = Math.random(); // @XXX use our random
     return min + (value * (max - min));
 }
 
@@ -215,8 +260,29 @@ function random_int(min, max)
 }
 
 //------------------------------------------------------------------------------
+function random_bool()
+{
+    return Math.random() > 0.5; // @XXX use our random
+}
+
+//------------------------------------------------------------------------------
+function random_element(collection)
+{
+    const i = random_int(collection.length);
+    return collection[i];
+}
+
+//------------------------------------------------------------------------------
+function random_signed(v)
+{
+    return Math.abs(v) * (random_bool() ? -1 : 1);
+}
+
+
+//------------------------------------------------------------------------------
 function __mulberry32(a)
 {
+
     // Reference:
     //   https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
     return function() {
@@ -228,24 +294,53 @@ function __mulberry32(a)
 }
 
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
+// Noise                                                                      //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+function set_noise_seed(seed)
+{
+    if(is_null_or_undefined(seed)) {
+        seed = random_float();
+    }
+
+    demolib_verbose("noise_seed:", seed);
+    noise.seed(Math.random());
+}
+
+//------------------------------------------------------------------------------
+function perlin_noise(x, y = 0, z = 0)
+{
+    return Math.abs(noise.simplex3(x, y, z));
+}
+
+
+
+
+//----------------------------------------------------------------------------//
+//                                                                            //
 // Input                                                                      //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 let __mouse_pos          = null;
 let __mouse_left_pressed = false;
+
 let __mouse_wheel_x = 0;
 let __mouse_wheel_y = 0;
 
 //------------------------------------------------------------------------------
 function get_mouse_pos() { return __mouse_pos;   }
 function get_mouse_x  () { return __mouse_pos.x; }
-function get_mouse_y  () { return __mouse_pos.x; }
+function get_mouse_y  () { return __mouse_pos.y; }
 
 function is_mouse_pressed(button_no) { return false; } // @todo
 
 function get_mouse_wheel_x() { return __mouse_wheel_x; }
-function get_mouse_wheel_y() { return __mouse_wheel_x; }
+function get_mouse_wheel_y() { return __mouse_wheel_y; }
 
 
 //------------------------------------------------------------------------------
@@ -304,8 +399,8 @@ function install_input_handlers(element, handlers)
         }
      });
 
-     // Mouse Whell
-     element.addEventListener("wheel", (ev) =>  {
+    // Mouse Whell
+    element.addEventListener("wheel", (ev) =>  {
         __mouse_wheel_x += ev.wheelDeltaX;
         __mouse_wheel_y += ev.wheelDeltaY;
 
@@ -314,14 +409,20 @@ function install_input_handlers(element, handlers)
         if(handlers && handlers.on_mouse_wheel) {
             handlers.on_mouse_wheel(__mouse_wheel_x, __mouse_wheel_y, ev);
         }
-     });
+    });
 }
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Math                                                                       //
+//                                                                            //
 //----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
 const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
+
+const    to_int        = Math.trunc;
 
 //------------------------------------------------------------------------------
 function to_radians(degrees) { return degrees * (MATH_PI/180.0); }
@@ -370,7 +471,7 @@ function denormalize(normalized, min, max)
 }
 
 //------------------------------------------------------------------------------
-function map_values(value, start1, end1, start2, end2)
+function map(value, start1, end1, start2, end2)
 {
     if(start1 == end1 || start2 == end2) {
         return end2;
@@ -385,6 +486,11 @@ function map_values(value, start1, end1, start2, end2)
         Math.max(start2, end2)
     );
 }
+
+
+//------------------------------------------------------------------------------
+function map_sin(value, start2, end2) { return map(value, -1, +1, start2, end2) };
+function map_cos(value, start2, end2) { return map(value, -1, +1, start2, end2) };
 
 //------------------------------------------------------------------------------
 function lerp(t, v0, v1)
@@ -416,7 +522,9 @@ function wrap_around(value, min, max)
 }
 
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Vector                                                                     //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
 function add_vec2(a, b) {
@@ -489,35 +597,788 @@ function make_vec2_unit(vec2)
 }
 
 
-
+//----------------------------------------------------------------------------//
+//                                                                            //
+// Easing                                                                     //
+//                                                                            //
+//----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-function Vector_Add(a, b)
-{
-    return make_vec2(a.x + b.x, a.y + b.y);
+function easing_linear_none(k) { return k; }
+//------------------------------------------------------------------------------
+function easing_quadratic_in    (k) { return k * k;       }
+function easing_quadratic_out   (k) { return k * (2 - k); }
+function easing_quadratic_in_out(k) {
+    if((k *= 2) < 1) { return 0.5 * k * k; }
+    return - 0.5 * (--k * (k - 2) - 1);
+}
+//------------------------------------------------------------------------------
+function easing_cubic_in    (k) { return k * k * k;       }
+function easing_cubic_out   (k) { return --k * k * k + 1; }
+function easing_cubic_in_out(k) {
+    if((k *= 2) < 1) { return 0.5 * k * k * k; }
+    return 0.5 * ((k -= 2) * k * k + 2);
+}
+//------------------------------------------------------------------------------
+function easing_quartic_in    (k) { return k * k * k * k;         }
+function easing_quartic_out   (k) { return 1 - (--k * k * k * k); }
+function easing_quartic_in_out(k) {
+    if((k *= 2) < 1) { return 0.5 * k * k * k * k; }
+    return - 0.5 * ((k -= 2) * k * k * k - 2);
+}
+//------------------------------------------------------------------------------
+function easing_quintic_in    (k) { return k * k * k * k * k;       }
+function easing_quintic_out   (k) { return --k * k * k * k * k + 1; }
+function easing_quintic_in_out(k) {
+    if((k *= 2) < 1) { return 0.5 * k * k * k * k * k; }
+    return 0.5 * ((k -= 2) * k * k * k * k + 2);
+}
+//------------------------------------------------------------------------------
+function easing_sinusoidal_in    (k) { return 1 - Math.cos(k * Math.PI / 2);     }
+function easing_sinusoidal_out   (k) { return Math.sin(k * Math.PI / 2);         }
+function easing_sinusoidal_in_out(k) { return 0.5 * (1 - Math.cos(Math.PI * k)); }
+//------------------------------------------------------------------------------
+function easing_exponential_in    (k) { return k === 0 ? 0 : Math.pow(1024, k - 1);     }
+function easing_exponential_out   (k) { return k === 1 ? 1 : 1 - Math.pow(2, - 10 * k); }
+function easing_exponential_in_out(k) {
+    if(k === 0) { return 0; }
+    if(k === 1) { return 1; }
+    if((k *= 2) < 1) { return 0.5 * Math.pow(1024, k - 1); }
+    return 0.5 * (- Math.pow(2, - 10 * (k - 1)) + 2);
+}
+//------------------------------------------------------------------------------
+function easing_circular_in    (k) { return 1 - Math.sqrt(1 - k * k); }
+function easing_circular_out   (k) { return Math.sqrt(1 - (--k * k)); }
+function easing_circular_in_out(k) {
+    if((k *= 2) < 1) { return - 0.5 * (Math.sqrt(1 - k * k) - 1); }
+    return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
+}
+//------------------------------------------------------------------------------
+function easing_elastic_in(k) {
+    if(k === 0) { return 0; }
+    if(k === 1) { return 1; }
+    return -Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI);
+}
+function easing_elastic_out(k) {
+    if(k === 0) { return 0; }
+    if(k === 1) { return 1; }
+    return Math.pow(2, -10 * k) * Math.sin((k - 0.1) * 5 * Math.PI) + 1;
+}
+function easing_elastic_in_out(k) {
+    if(k === 0) { return 0; }
+    if(k === 1) { return 1; }
+    k *= 2;
+    if(k < 1) { return -0.5 * Math.pow(2, 10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI); }
+    return 0.5 * Math.pow(2, -10 * (k - 1)) * Math.sin((k - 1.1) * 5 * Math.PI) + 1;
+}
+//------------------------------------------------------------------------------
+function easing_back_in(k) {
+    var s = 1.70158;
+    return k * k * ((s + 1) * k - s);
+}
+function easing_back_out(k) {
+    var s = 1.70158;
+    return --k * k * ((s + 1) * k + s) + 1;
+}
+function easing_back_in_out(k) {
+    var s = 1.70158 * 1.525;
+    if((k *= 2) < 1) { return 0.5 * (k * k * ((s + 1) * k - s)); }
+    return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
+}
+//------------------------------------------------------------------------------
+function easing_bounce_in (k) { return 1 - easing_bounce_out(1 - k); }
+function easing_bounce_out(k) {
+    if     (k < (1 / 2.75))   { return 7.5625 * k * k;                                }
+    else if(k < (2 / 2.75))   { return 7.5625 * (k -= (1.5   / 2.75)) * k + 0.75;     }
+    else if(k < (2.5 / 2.75)) { return 7.5625 * (k -= (2.25  / 2.75)) * k + 0.9375;   }
+    else                      { return 7.5625 * (k -= (2.625 / 2.75)) * k + 0.984375; }
+}
+function easing_bounce_in_out(k) {
+    if(k < 0.5) { return easing_bounce_in(k * 2) * 0.5; }
+    return easing_bounce_out(k * 2 - 1) * 0.5 + 0.5;
 }
 
+
 //------------------------------------------------------------------------------
-function Vector_Sub(a, b)
-{
-    return make_vec2(a.x - b.x, a.y - b.y);
+const Easings = {
+    linear: {
+        none: easing_linear_none
+    },
+    quadratic: {
+         in:     easing_quadratic_in,
+         out:    easing_quadratic_out,
+         in_out: easing_quadratic_in_out,
+    },
+    cubic: {
+        in:     easing_cubic_in,
+        out:    easing_cubic_out,
+        in_out: easing_cubic_in_out,
+    },
+    quartic: {
+        in:     easing_quartic_in,
+        out:    easing_quartic_out,
+        in_out: easing_quartic_in_out,
+    },
+    quintic: {
+        in:     easing_quintic_in,
+        out:    easing_quintic_out,
+        in_out: easing_quintic_in_out,
+    },
+    sinusoidal: {
+        in:     easing_sinusoidal_in,
+        out:    easing_sinusoidal_out,
+        in_out: easing_sinusoidal_in_out,
+    },
+    exponential: {
+        in:     easing_exponential_in,
+        out:    easing_exponential_out,
+        in_out: easing_exponential_in_out,
+    },
+    circular: {
+        in:     easing_circular_in,
+        out:    easing_circular_out,
+        in_out: easing_circular_in_out,
+    },
+    elastic: {
+        in:    easing_elastic_in,
+        out:   easing_elastic_out,
+        inout: easing_elastic_in_out,
+    },
+    back: {
+         in:     easing_back_in,
+         out:    easing_back_out,
+         in_out: easing_back_in_out,
+    },
+    bounce: {
+        in:     easing_bounce_in,
+        out:    easing_bounce_out,
+        in_out: easing_bounce_in_out,
+    },
 }
 
 //----------------------------------------------------------------------------//
 // Tween                                                                      //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-function tween_manager_update(dt) {
+//--------------------------------------------------------------------------
+function get_all_easings()
+{
+    const arr = [];
 
+    const mode_keys = Object.keys(Easings);
+    for(let i = 0; i < mode_keys.length; ++i) {
+        const mode_key = mode_keys[i];
+        const mode     = Easings[mode_key];
+
+        const easing_keys = Object.keys(mode);
+        for(let j = 0; j < easing_keys.length; ++j) {
+            const easing_key = easing_keys[j];
+            const easing     = mode[easing_key];
+            arr.push(easing);
+        }
+    }
+
+    return arr;
+}
+
+//--------------------------------------------------------------------------
+function get_random_easing()
+{
+    const type = get_random_easing_type();
+    const mode = get_random_easing_mode(type);
+    return mode;
+}
+
+//--------------------------------------------------------------------------
+function get_random_easing_type()
+{
+    const keys = Object.keys(Easings);
+    const key  = random_element(keys);
+    return Easings[key];
+}
+
+//--------------------------------------------------------------------------
+function get_random_easing_mode(easing)
+{
+    const keys = Object.keys(easing);
+    const key  = random_element(keys);
+    return easing[key];
+}
+
+
+//----------------------------------------------------------------------------//
+//                                                                            //
+// Tween                                                                      //
+//                                                                            //
+//----------------------------------------------------------------------------//
+
+/**
+ * Tween.js - Licensed under the MIT license
+ * https://github.com/tweenjs/tween.js
+ * ----------------------------------------------
+ *
+ * See https://github.com/tweenjs/tween.js/graphs/contributors for the full list of contributors.
+ * Thank you all, you're awesome!
+ */
+
+//-----------------------------------------------------------------------------
+class Tween_Group
+{
+    static _tagged_groups = new Map();
+    static _default_group = null;
+
+    //
+    // Static Functions
+    //
+
+    //--------------------------------------------------------------------------
+    static get_tagged_groups()
+    {
+        return Tween_Group._tagged_groups;
+    }
+
+    //--------------------------------------------------------------------------
+    static get_group_with_tag(tag)
+    {
+        let group = Tween_Group._tagged_groups.get(tag);
+        if(!group) {
+            group = new Tween_Group(tag);
+            Tween_Group._tagged_groups.set(tag, group);
+        }
+        return group;
+    }
+
+    //--------------------------------------------------------------------------
+    static get_default_tween_group()
+    {
+        if(!Tween_Group._default_group) {
+            Tween_Group._default_group = new Tween_Group("Tween_Group_Default_Group");
+            Tween_Group._default_group._remove_on_completion = false;
+            Tween_Group._tagged_groups.set(
+                Tween_Group._default_group.group_name,
+                Tween_Group._default_group
+            );
+        }
+
+        return Tween_Group._default_group;
+    }
+
+
+    //
+    // Constructor
+    //
+
+    //--------------------------------------------------------------------------
+    constructor(name)
+    {
+        this.group_name = name;
+
+        this._tweens               = [];
+        this._on_complete_callback = null;
+        this._started              = false;
+        this._completed            = false;
+
+        this._remove_on_completion = true;
+    }
+
+    //
+    // Callbacks
+    //
+
+    //--------------------------------------------------------------------------
+    on_complete(callback)
+    {
+        this._on_complete_callback = callback;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    is_completed() { return this._completed; }
+
+    //--------------------------------------------------------------------------
+    get_all() { return this._tweens; }
+
+    //--------------------------------------------------------------------------
+    remove_all () { this._tweens = []; }
+
+    //--------------------------------------------------------------------------
+    add(tween)
+    {
+        this._tweens.push(tween);
+        this._started   = true;
+        this._completed = false;
+    }
+
+    //--------------------------------------------------------------------------
+    remove(tween)
+    {
+        const pred = (t)=> {
+            return t.get_id() == tween.get_id();
+        };
+
+        // @XXX
+        luna.Arr.remove_if(this._tweens, pred);
+    }
+
+    //--------------------------------------------------------------------------
+    update(delta_time = get_delta_time())
+    {
+        if(this._completed) {
+            return;
+        }
+
+        let any_tween_is_playing = false;
+        for(let i = 0; i < this._tweens.length; ++i) {
+            const tween = this._tweens[i];
+            if(tween._is_playing) {
+                tween.update(delta_time);
+                any_tween_is_playing |= tween._is_playing;
+            }
+        }
+
+        if(!any_tween_is_playing) {
+            if(this._started) {
+                this._completed = true;
+                this._started   = false;
+
+                this.remove_all();
+
+                if(this._on_complete_callback != null) {
+                    // debugger;
+                    this._on_complete_callback();
+                    this._on_complete_callback = null;
+                }
+
+                if(this._remove_on_completion && this.group_name) {
+                    Tween_Group._tagged_groups.delete(this.group_name);
+                }
+            }
+        }
+    }
+};
+
+
+//------------------------------------------------------------------------------
+class Tween
+{
+    //
+    // Factory Functions
+    //
+
+    //--------------------------------------------------------------------------
+    static create(duration, from = {v: 0}, to = {v: 1})
+    {
+        const tween = new Tween(duration);
+        if(!is_null_or_undefined(from)) {
+            tween.from(from);
+        }
+        if(!is_null_or_undefined(to)) {
+            tween.to(to);
+        }
+        return tween;
+    }
+
+    //--------------------------------------------------------------------------
+    static create_with_tag(duration, tag)
+    {
+        const group = Tween_Group.get_group_with_tag(tag);
+        return Tween.create_with_group(duration, group);
+    }
+
+    //--------------------------------------------------------------------------
+    static create_with_group(duration, group)
+    {
+        return new Tween(duration, group);
+    }
+
+    //--------------------------------------------------------------------------
+    static _next_id()
+    {
+        if(this.s_next_id == undefined) {
+            this.s_next_id = 0;
+        }
+
+        return this.s_next_id++;
+    }
+
+
+    //
+    // Constructor
+    //
+
+    //--------------------------------------------------------------------------
+    constructor(duration, group)
+    {
+        this._object            = null;
+        this._ratio             = 0;
+        this._values_start      = {};
+        this._values_end        = {};
+
+        this._delay_time     = 0;
+        this._elapsed        = 0;
+        this._delay_to_start = 0;
+        this._duration       = duration;
+
+        this._repeat            = 0;
+        this._repeat_delay_time = undefined;
+        this._yoyo              = false;
+
+        this._is_paused  = false;
+        this._is_playing = false;
+        this._reversed   = false;
+
+        this._easing_function = easing_linear_none;
+
+        this._chained_tweens = [];
+
+        this._on_start_callback_fired = false;
+        this._on_start_callback       = null;
+        this._on_update_callback      = null;
+        this._on_repeat_callback      = null;
+        this._on_complete_callback    = null;
+        this._on_stop_callback        = null;
+
+        this._group = group || Tween_Group.get_default_tween_group();
+        this._id    = Tween._next_id();
+    };
+
+
+    //
+    // Getters
+    //
+
+    //--------------------------------------------------------------------------
+    get_value  () { return this._object;     }
+    get_ratio  () { return this._ratio       }
+    get_id     () { return this._id;         }
+    is_playing () { return this._is_playing; }
+    is_paused  () { return this._is_paused;  }
+
+
+    //
+    // Setters
+    //
+
+    //--------------------------------------------------------------------------
+    from(properties)
+    {
+        this._object       = properties;
+        this._values_start = Object.create(properties);
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    to(properties)
+    {
+        this._values_end = Object.create(properties);
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    duration(d)
+    {
+        this._duration = d;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    group(group)
+    {
+        this._group = group;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    delay(amount)
+    {
+        this._delay_time = amount;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    repeat(times)
+    {
+        this._repeat = times;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    repeat_delay(amount)
+    {
+        this._repeat_delay_time = amount;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    yoyo(yoyo)
+    {
+        this._yoyo = yoyo;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    easing(easing_function)
+    {
+        this._easing_function = easing_function;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    chain()
+    {
+        this._chained_tweens = arguments;
+        return this;
+    }
+
+    //
+    // Actions
+    //
+
+    //--------------------------------------------------------------------------
+    start()
+    {
+        this._group.add(this);
+
+        this._is_playing              = true;
+        this._is_paused               = false;
+        this._reversed                = false;
+        this._on_start_callback_fired = false;
+        this._elapsed                 = 0;
+
+        for(var property in this._values_end) {
+            // Check if an Array was provided as property value
+            if(this._values_end[property] instanceof Array) {
+                if(this._values_end[property].length === 0) {
+                    continue;
+                }
+                // Create a local copy of the Array with the start value at the front
+                this._values_end[property] = [this._object[property]].concat(this._values_end[property]);
+            }
+            // If `to()` specifies a property that doesn't exist in the source object,
+            // we should not set that property in the object
+            if(this._object[property] === undefined) {
+                continue;
+            }
+            // Save the starting value, but only once.
+            if(typeof(this._values_start[property]) === 'undefined') {
+                this._values_start[property] = this._object[property];
+            }
+            if((this._values_start[property] instanceof Array) === false) {
+                this._values_start[property] *= 1.0; // Ensures we're using numbers, not strings
+            }
+        }
+
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    update(delta_time = get_delta_time())
+    {
+        if(!this._is_playing) {
+            return;
+        }
+
+        this._delay_to_start -= delta_time;
+        if(this._delay_to_start > 0) {
+            return;
+        }
+
+        var property;
+        var value;
+
+        if(this._on_start_callback_fired === false) {
+            if(this._on_start_callback !== null) {
+                this._on_start_callback(this._object);
+            }
+            this._on_start_callback_fired = true;
+        }
+
+        this._elapsed += delta_time;
+        this._ratio    = (this._elapsed / this._duration);
+
+        let ratio_value = this._ratio;
+        if(this._reversed) {
+            ratio_value = 1 - this._ratio;
+        }
+
+        value = this._easing_function(ratio_value);
+        for(property in this._values_end) {
+            // Don't update properties that do not exist in the source object
+            if(this._values_start[property] === undefined) {
+                continue;
+            }
+
+            var start = this._values_start[property];
+            var end   = this._values_end  [property];
+
+            if(end instanceof Array) {
+                this._object[property] = this._interpolation(end, value);
+            } else {
+                // Parses relative end values with start as base (e.g.: +10, -3)
+                if(typeof (end) === 'string') {
+                    if(end.charAt(0) === '+' || end.charAt(0) === '-') {
+                        end = start + parseFloat(end);
+                    } else {
+                        end = parseFloat(end);
+                    }
+                }
+
+                // Protect against non numeric properties.
+                if(typeof (end) === 'number') {
+                    this._object[property] = start + (end - start) * value;
+                }
+            }
+        }
+
+        if(this._on_update_callback !== null) {
+            this._on_update_callback(this._object, delta_time);
+        }
+
+        if(this._ratio >= 1) {
+            if(this._repeat > 0) {
+                this._elapsed = 0;
+
+                if(isFinite(this._repeat)) {
+                    this._repeat--;
+                }
+
+                if(this._yoyo) {
+                    this._reversed = !this._reversed;
+                }
+
+                if(this._repeat_delay_time !== undefined) {
+                    this._delay_to_start = this._repeat_delay_time;
+                } else {
+                    this._delay_to_start = this._delay_time;
+                }
+
+                if(this._on_repeat_callback !== null) {
+                    this._on_repeat_callback(this._object);
+                }
+
+                return;
+            } else {
+
+                if(this._on_complete_callback !== null) {
+                    this._on_complete_callback(this._object);
+                }
+
+                this._is_playing = false;
+                for(var i = 0, numChainedTweens = this._chained_tweens.length; i < numChainedTweens; i++) {
+                    // Make the chained tweens start exactly at the time they should,
+                    // even if the `update()` method was called way past the duration of the tween
+                    this._chained_tweens[i].start(this._duration);
+                }
+                return;
+            }
+        }
+        return;
+    }
+
+    //--------------------------------------------------------------------------
+    stop()
+    {
+        if(!this._is_playing) {
+            return this;
+        }
+
+        this._group.remove(this);
+
+        this._is_playing = false;
+        this._is_paused  = false;
+
+        if(this._on_stop_callback !== null) {
+            this._on_stop_callback(this._object);
+        }
+
+        this.stop_chained_tweens();
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    end()
+    {
+        this.update(Infinity);
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    stop_chained_tweens()
+    {
+       for(var i = 0, numChainedTweens = this._chained_tweens.length; i < numChainedTweens; i++) {
+            this._chained_tweens[i].stop();
+        }
+    }
+
+
+    //
+    // Callbacks
+    //
+
+    //--------------------------------------------------------------------------
+    on_group_completed(callback)
+    {
+        // @XXX(stdmatt): Hacky... 8/3/2021, 7:06:21 AM
+        if(!this._group._on_complete_callback) {
+            this._group._on_complete_callback =  callback;
+        }
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    on_start(callback)
+    {
+        this._on_start_callback = callback;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    on_update(callback)
+    {
+        this._on_update_callback = callback;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    on_repeat(callback)
+    {
+        this._on_repeat_callback = callback;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    on_complete(callback)
+    {
+        this._on_complete_callback = callback;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------
+    on_stop(callback)
+    {
+        this._on_stop_callback = callback;
+        return this;
+    }
+
+    //
+    // Private
+    //
+
+    //--------------------------------------------------------------------------
+	_interpolation(v, k)
+    {
+        const m = v.length - 1;
+        const f = m * k;
+        const i = Math.floor(f);
+        const fn = lerp;
+
+        if (k < 0) { return fn(v[0], v[1], f);         }
+        if (k > 1) { return fn(v[m], v[m - 1], m - f); }
+        return fn(v[i], v[i + 1 > m ? m : i + 1], f - i);
+    }
 }
 
 
 /*
-
-
-
-
-
-
 
 //------------------------------------------------------------------------------
 function Canvas_Resize(width, height)
@@ -645,15 +1506,6 @@ function Canvas_SetStrokeSize(size)
     __context.lineWidth = size;
 }
 
-//------------------------------------------------------------------------------
-function Canvas_DrawPoint(x, y, size)
-{
-    __context.beginPath();
-        __context.arc(x, y, size, 0, 2 * Math.PI, true);
-    __context.closePath();
-    __context.stroke();
-    __context.fill();
-}
 
 
 //------------------------------------------------------------------------------
