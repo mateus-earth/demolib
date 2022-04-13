@@ -23,8 +23,10 @@ function set_style_hidden(...args) {
 }
 
 //------------------------------------------------------------------------------
-const echo            = console.log
+const echo = console.log;
+
 const demolib_verbose = echo;
+
 
 //
 // Min_Max
@@ -101,11 +103,9 @@ let __canvas  = null;
 let __context = null;
 
 //------------------------------------------------------------------------------
+function get_canvas_width (s = 1)  { return __canvas.width  * s; }
+function get_canvas_height(s = 1)  { return __canvas.height * s; }
 function get_context() { return __context; }
-
-//------------------------------------------------------------------------------
-function get_canvas_width ()  { return __canvas.width;  }
-function get_canvas_height()  { return __canvas.height; }
 
 //------------------------------------------------------------------------------
 function set_main_canvas(canvas)
@@ -165,6 +165,12 @@ function set_canvas_line_width(width) { __context.lineWidth   = width; }
 //
 
 //------------------------------------------------------------------------------
+function set_canvas_stroke_size(size)
+{
+    __context.lineWidth = size;
+}
+
+//------------------------------------------------------------------------------
 function fill_circle(x, y, r)
 {
     fill_arc(x, y, r, 0, MATH_2PI, true);
@@ -219,7 +225,6 @@ function canvas_render()
 
     __time_total += dt;
     __time_delta  = dt;
-
 
     __user_draw_func(dt);
     window.requestAnimationFrame(canvas_render);
@@ -333,21 +338,21 @@ function perlin_noise(x, y = 0, z = 0)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-let __mouse_x = 0;
-let __mouse_y = 0;
+let __mouse_pos          = null;
 let __mouse_left_pressed = false;
 
 let __mouse_wheel_x = 0;
 let __mouse_wheel_y = 0;
 
 //------------------------------------------------------------------------------
-function get_mouse_x() { return __mouse_x; }
-function get_mouse_y() { return __mouse_y; }
+function get_mouse_pos() { return __mouse_pos;   }
+function get_mouse_x  () { return __mouse_pos.x; }
+function get_mouse_y  () { return __mouse_pos.y; }
+
+function is_mouse_pressed(button_no) { return false; } // @todo
 
 function get_mouse_wheel_x() { return __mouse_wheel_x; }
 function get_mouse_wheel_y() { return __mouse_wheel_y; }
-
-function is_mouse_pressed(button_no) { return false; } // @todo
 
 
 //------------------------------------------------------------------------------
@@ -360,11 +365,15 @@ function install_input_handlers(element, handlers)
     // Move
     element.addEventListener("mousemove", (ev) =>  {
         const rect = element.getBoundingClientRect();
-        __mouse_x = (ev.clientX - rect.left) / (rect.right  - rect.left) * element.width;
-        __mouse_y = (ev.clientY - rect.top ) / (rect.bottom - rect.top ) * element.height;
+        if(is_null_or_undefined(__mouse_pos)) {
+            __mouse_pos = make_vec2();
+        }
+
+        __mouse_pos.x = (ev.clientX - rect.left) / (rect.right  - rect.left) * element.width;
+        __mouse_pos.y = (ev.clientY - rect.top ) / (rect.bottom - rect.top ) * element.height;
 
         if(handlers && handlers.on_mouse_move) {
-            handlers.on_mouse_move(__mouse_x, __mouse_y, ev);
+            handlers.on_mouse_move(__mouse_pos.x, __mouse_pos.y, ev);
         }
     }, false);
 
@@ -425,10 +434,23 @@ function install_input_handlers(element, handlers)
 const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
 
-//------------------------------------------------------------------------------
-function to_degrees(r) { return r * (180 / MATH_PI); }
-function to_radians(d) { return d * (MATH_PI / 180); }
 const    to_int        = Math.trunc;
+
+//------------------------------------------------------------------------------
+function to_radians(degrees) { return degrees * (MATH_PI/180.0); }
+function to_degrees(radians) { return radians * (180.0/MATH_PI); }
+
+//------------------------------------------------------------------------------
+function direction(x1, y1, x2, y2)
+{
+    return make_vec2(x2 - x1, y2 - y1);
+}
+
+//------------------------------------------------------------------------------
+function direction_unit(x1, y1, x2, y2)
+{
+    return make_vec2_unit(direction(x1, y1, x2, y2));
+}
 
 //------------------------------------------------------------------------------
 function distance(x1, y1, x2, y2)
@@ -488,7 +510,6 @@ function lerp(t, v0, v1)
     return (1 - t) * v0 + t * v1;
 }
 
-
 //------------------------------------------------------------------------------
 function clamp(value, min, max)
 {
@@ -497,6 +518,20 @@ function clamp(value, min, max)
     return value;
 }
 
+//------------------------------------------------------------------------------
+function wrap_around(value, min, max)
+{
+    if(is_null_or_undefined(max)) {
+        max = min;
+        min = 0;
+    }
+    if(value >= max) {
+        return min;
+    } else if(value < min) {
+        return max - 1;
+    }
+    return value;
+}
 
 //----------------------------------------------------------------------------//
 //                                                                            //
@@ -504,9 +539,24 @@ function clamp(value, min, max)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-function add_vec2(a, b)         { return make_vec2(a.x + b.x, a.y - b.y); }
-function sub_vec2(a, b)         { return make_vec2(a.x - b.x, a.y - b.y); }
-function mul_vec2(vec2, scalar) { return make_vec2(vec2.x * scalar, vec2.y * scalar); }
+function add_vec2(a, b) {
+     a.x += b.x;
+     a.y += b.y;
+}
+
+//------------------------------------------------------------------------------
+function sub_vec2(a, b)
+{
+    a.x -= b.x;
+    a.y -= b.y;
+}
+
+//------------------------------------------------------------------------------
+function mul_vec2(vec2, scalar)
+{
+    vec2.x *= scalar;
+    vec2.y *= scalar;
+}
 
 //------------------------------------------------------------------------------
 function copy_vec2(vec2)
@@ -738,6 +788,10 @@ const Easings = {
     },
 }
 
+//----------------------------------------------------------------------------//
+// Tween                                                                      //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 function get_all_easings()
 {
@@ -1355,8 +1409,6 @@ class Tween
         return fn(v[i], v[i + 1 > m ? m : i + 1], f - i);
     }
 }
-
-
 
 
 /*
