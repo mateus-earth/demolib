@@ -21,6 +21,7 @@ function set_style_hidden(...args) {
         args[i].style.visibility = "hidden";
     }
 }
+
 //------------------------------------------------------------------------------
 const echo            = console.log
 const demolib_verbose = echo;
@@ -986,10 +987,10 @@ class Tween
     //--------------------------------------------------------------------------
     constructor(duration, group)
     {
-        this._object            = null;
-        this._ratio             = 0;
-        this._values_start      = {};
-        this._values_end        = {};
+        this._object       = null;
+        this._ratio        = 0;
+        this._values_start = {};
+        this._values_end   = {};
 
         this._delay_time     = 0;
         this._elapsed        = 0;
