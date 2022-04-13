@@ -546,6 +546,27 @@ function make_vec2_unit(vec2)
     return make_vec2(vec2.x / len, vec2.y / len);
 }
 
+//----------------------------------------------------------------------------//
+//                                                                            //
+// String                                                                     //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+function str_cat(...args) { return str_join("", args); }
+
+//------------------------------------------------------------------------------
+function str_join(separator, ...args)
+{
+    // @perf(string cat): There's a better way to no produce so much garbage???
+    let result = "";
+    for(let i = 0; i < args.length -1; ++i) {
+        result += (args[i] + separator);
+    }
+
+    result += args[args.length-1];
+    return result;
+}
+
 
 //----------------------------------------------------------------------------//
 //                                                                            //
