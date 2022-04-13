@@ -10,6 +10,17 @@ function is_null_or_undefined(v)
     return (v === null || v === undefined);
 }
 
+function set_style_visible(...args) {
+    for(let i = 0; i < args.length; ++i) {
+        args[i].style.visibility = "visible";
+    }
+}
+
+function set_style_hidden(...args) {
+    for(let i = 0; i < args.length; ++i) {
+        args[i].style.visibility = "hidden";
+    }
+}
 //------------------------------------------------------------------------------
 const echo            = console.log
 const demolib_verbose = echo;
