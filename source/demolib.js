@@ -10,22 +10,18 @@ function is_null_or_undefined(v)
     return (v === null || v === undefined);
 }
 
-function set_style_visible(...args) {
-    for(let i = 0; i < args.length; ++i) {
-        args[i].style.visibility = "visible";
-    }
-}
 
-function set_style_hidden(...args) {
-    for(let i = 0; i < args.length; ++i) {
-        args[i].style.visibility = "hidden";
-    }
-}
+//
+// Log
+//
 
 //------------------------------------------------------------------------------
-const echo = console.log;
-
-const demolib_verbose = echo;
+const echo        = console.log; // Muscle Memory :)
+const verbose_log = console.log; // @TODO: Make a way to remove this from dist...
+const error_log   = (...args) => {
+    console.error(...args); // @TODO: Make a way to remove this from dist...
+    debugger;
+}
 
 
 //
@@ -108,11 +104,14 @@ function get_canvas_height(s = 1)  { return __canvas.height * s; }
 function get_context() { return __context; }
 
 //------------------------------------------------------------------------------
-function set_main_canvas(canvas)
-{
+function set_main_canvas(canvas) {
     __canvas  = canvas;
     __context = canvas.getContext("2d");
 }
+
+//------------------------------------------------------------------------------
+function get_main_canvas        () { return __canvas;  }
+function get_main_canvas_context() { return __context; }
 
 //------------------------------------------------------------------------------
 function begin_draw() { __context.save   (); }
@@ -214,9 +213,11 @@ function draw_line(x1, y1, x2, y2)
 //------------------------------------------------------------------------------
 function canvas_render()
 {
+    // Update timers...
     __time_now = Date.now();
 
-    let dt = (__time_now - __time_prev) / 1000;
+    // Cap frame rate.
+    let dt = ((__time_now - __time_prev) / 1000);
     if(dt > MIN_FRAME_RATE) {
         dt = MIN_FRAME_RATE;
     }
@@ -226,7 +227,28 @@ function canvas_render()
     __time_total += dt;
     __time_delta  = dt;
 
+    // Call user update.
     __user_draw_func(dt);
+
+    // Add frames to gif.
+    if(gif_is_recording()) {
+        __gif.addFrame(
+            __context,
+            {   // @todo: This object can be cached???
+                copy: true,
+                delay: __gif_delay_ms
+            }
+        );
+
+        __gif_duration_s -= dt;
+        verbose_log(`Gif add frame - Remaining ${__gif_duration_s}`);
+
+        if(__gif_duration_s <= 0) {
+            gif_stop_record();
+        }
+    }
+
+    // Continue the loop.
     window.requestAnimationFrame(canvas_render);
 }
 
@@ -246,7 +268,7 @@ function set_random_seed(seed = null)
         seed = Date.now();
     }
 
-    demolib_verbose("random_seed:", seed);
+    verbose_log("random_seed:", seed);
     __rnd_gen = __mulberry32(seed);
 }
 
@@ -319,7 +341,7 @@ function set_noise_seed(seed)
         seed = random_float();
     }
 
-    demolib_verbose("noise_seed:", seed);
+    verbose_log("noise_seed:", seed);
     noise.seed(Math.random());
 }
 
@@ -468,6 +490,7 @@ function distance_sq(x1, y1, x2, y2)
     return (x*x) + (y*y);
 }
 
+
 //------------------------------------------------------------------------------
 function normalize(value, min, max)
 {
@@ -483,7 +506,7 @@ function denormalize(normalized, min, max)
 }
 
 //------------------------------------------------------------------------------
-function map(value, start1, end1, start2, end2)
+function map_values(value, start1, end1, start2, end2)
 {
     if(start1 == end1 || start2 == end2) {
         return end2;
@@ -539,24 +562,9 @@ function wrap_around(value, min, max)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-function add_vec2(a, b) {
-     a.x += b.x;
-     a.y += b.y;
-}
-
-//------------------------------------------------------------------------------
-function sub_vec2(a, b)
-{
-    a.x -= b.x;
-    a.y -= b.y;
-}
-
-//------------------------------------------------------------------------------
-function mul_vec2(vec2, scalar)
-{
-    vec2.x *= scalar;
-    vec2.y *= scalar;
-}
+function add_vec2(a, b)         { return make_vec2(a.x + b.x, a.y - b.y); }
+function sub_vec2(a, b)         { return make_vec2(a.x - b.x, a.y - b.y); }
+function mul_vec2(vec2, scalar) { return make_vec2(vec2.x * scalar, vec2.y * scalar); }
 
 //------------------------------------------------------------------------------
 function copy_vec2(vec2)
@@ -607,6 +615,8 @@ function make_vec2_unit(vec2)
 
     return make_vec2(vec2.x / len, vec2.y / len);
 }
+
+
 
 //----------------------------------------------------------------------------//
 //                                                                            //
@@ -788,11 +798,13 @@ const Easings = {
     },
 }
 
+
 //----------------------------------------------------------------------------//
+//                                                                            //
 // Tween                                                                      //
+//                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-//--------------------------------------------------------------------------
 function get_all_easings()
 {
     const arr = [];
@@ -837,12 +849,6 @@ function get_random_easing_mode(easing)
     return easing[key];
 }
 
-
-//----------------------------------------------------------------------------//
-//                                                                            //
-// Tween                                                                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
 
 /**
  * Tween.js - Licensed under the MIT license
@@ -988,7 +994,6 @@ class Tween_Group
         }
     }
 };
-
 
 //------------------------------------------------------------------------------
 class Tween
@@ -1410,6 +1415,159 @@ class Tween
     }
 }
 
+
+//----------------------------------------------------------------------------//
+//                                                                            //
+// Gif                                                                        //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+let __gif              = null;
+let __is_recording_gif = false;
+let __gif_FPS          = 0;                     // in frames
+let __gif_duration_s   = 0;                    // in seconds
+let __gif_delay_ms     = 0;
+//------------------------------------------------------------------------------
+function gif_is_recording()
+{
+    return __gif && __is_recording_gif && __gif_duration_s > 0;
+}
+
+//------------------------------------------------------------------------------
+function gif_setup_listeners()
+{
+    window.addEventListener('keydown', (event) => {
+        if(event.shiftKey && event.code == "F1") {  // shift+F1
+            gif_create();
+        }
+    });
+}
+
+//------------------------------------------------------------------------------
+function gif_create()
+{
+    if(__gif) {
+        error_log("Gif is already created");
+    }
+
+    __gif = new GIF({
+        workers:      5,
+        quality:      10,
+        width:        get_canvas_width (),
+        height:       get_canvas_height(),
+        workerScript: "/modules/demolib/modules/external/gif.js/gif.worker.js",
+    });
+
+    {
+        __gif.dom = document.createElement('div');
+        __gif.dom.innerHTML = `
+            <div class="gif-recorder-container">
+                <div>
+                    <span>Gif</span>
+                </div>
+
+                <div>
+                    <span>Duration</span>
+                    <input id="gifDuration" type="text" value="5" size="2"/>
+                </div>
+
+                <div>
+                    <span>FPS</span>
+                    <input id="gifFPS" type="text" value="60" size="2"/>
+                </div>
+
+                <div>
+                    <button id="gifButton" onclick="gif_start_record()">Record</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(__gif.dom);
+    }
+}
+
+//------------------------------------------------------------------------------
+function gif_start_record(duration, fps)
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    // Get the values of the duration and fps from the inputs... (if available)
+    if(!duration) {
+        const input = document.getElementById("gifDuration");
+        if(!input) {
+            error_log("Missing gifDuration input");
+        }
+
+        duration = input.value;
+    }
+
+    if(!fps) {
+        const input = document.getElementById("gifFPS");
+        if(!input) {
+            error_log("Missing gifFPS input");
+        }
+
+        fps = input.value;
+    }
+
+    // Change the Button
+    const button = document.getElementById("gifButton");
+    if(button) {
+        button.innerHTML = "Recording...";
+        button.disabled  = true;
+    }
+
+    //
+    __is_recording_gif = true;
+    __gif_FPS          = fps;
+    __gif_duration_s   = duration;
+    __gif_delay_ms     = (1 / __gif_FPS) * 1000; // in milliseconds
+}
+
+//------------------------------------------------------------------------------
+function gif_stop_record()
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    __is_recording_gif = false;
+
+
+    // Change the Button
+    const button = document.getElementById("gifButton");
+    if(button) {
+        button.innerHTML = "Export";
+        button.disabled  = false;
+
+        button.onclick = ()=> {
+            button.innerHTML = "Exporting...";
+            button.disabled  = false;
+
+            gif_save();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+function gif_save()
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    __gif.on("finished", function(blob) {
+        verbose_log("Gif finished");
+        window.open(URL.createObjectURL(blob));
+
+        document.body.removeChild(__gif.dom);
+        __gif = null;
+    });
+
+    __gif.render();
+}
 
 /*
 
