@@ -18,13 +18,13 @@ const error_log   = (...args) => {
 // Loop                                                                       //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-const MIN_FRAME_RATE = 1.0/30.0;
+const MIN_FRAME_RATE = (1.0 / 30.0);
 
 //------------------------------------------------------------------------------
 let __time_total = 0;
 let __time_delta = 0;
-let __time_prev = 0;
-let __time_now  = 0;
+let __time_prev  = 0;
+let __time_now   = 0;
 
 let __user_draw_func = null;
 
@@ -34,6 +34,7 @@ function start_draw_loop(user_draw_func)
     __user_draw_func = user_draw_func;
     canvas_render();
 }
+
 
 //----------------------------------------------------------------------------//
 // Canvas Functions                                                           //
