@@ -186,32 +186,9 @@ function fill_arc(x, y, r, sa, ea, close)
     __context.fill();
 }
 
-//
-// Draw Functions
-//
 
 //------------------------------------------------------------------------------
-function draw_point(x, y, size)
-{
-    __context.beginPath();
-        __context.arc(x, y, size, 0, 2 * Math.PI, true);
-    __context.closePath();
-    __context.stroke();
-    __context.fill();
-}
-
-//------------------------------------------------------------------------------
-function draw_line(x1, y1, x2, y2)
-{
-    __context.beginPath();
-        __context.moveTo(x1, y1);
-        __context.lineTo(x2, y2);
-    __context.closePath();
-    __context.stroke();
-}
-
-//------------------------------------------------------------------------------
-function canvas_render()
+function canvas_render() // @todo: make private
 {
     // Update timers...
     __time_now = Date.now();
@@ -251,6 +228,44 @@ function canvas_render()
     // Continue the loop.
     window.requestAnimationFrame(canvas_render);
 }
+
+//
+// Draw Functions
+//
+
+//------------------------------------------------------------------------------
+function draw_point(x, y, size)
+{
+    __context.beginPath();
+        __context.arc(x, y, size, 0, 2 * Math.PI, true);
+    __context.closePath();
+    __context.stroke();
+    __context.fill();
+}
+
+//------------------------------------------------------------------------------
+function draw_line(x1, y1, x2, y2)
+{
+    __context.beginPath();
+        __context.moveTo(x1, y1);
+        __context.lineTo(x2, y2);
+    __context.closePath();
+    __context.stroke();
+}
+
+//------------------------------------------------------------------------------
+function draw_arc(x, y, r, sa, ea, close)
+{
+    __context.beginPath();
+        __context.arc(x, y, r, sa, ea);
+        if(close != undefined && close) {
+            __context.closePath();
+        }
+    __context.stroke();
+}
+
+
+
 
 
 //----------------------------------------------------------------------------//
@@ -1699,16 +1714,6 @@ function Canvas_SetStrokeSize(size)
 
 
 
-//------------------------------------------------------------------------------
-function Canvas_DrawArc(x, y, r, sa, ea, close)
-{
-    __context.beginPath();
-        __context.arc(x, y, r, sa, ea);
-        if(close != undefined && close) {
-            __context.closePath();
-        }
-    __context.stroke();
-}
 
 
 
