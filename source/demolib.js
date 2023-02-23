@@ -14,6 +14,8 @@ const error_log   = (...args) => {
     console.error(...args); // @TODO: Make a way to remove this from dist...
     debugger;
 }
+
+
 //----------------------------------------------------------------------------//
 // Loop                                                                       //
 //----------------------------------------------------------------------------//
@@ -48,18 +50,18 @@ function get_canvas_width ()  { return __canvas.width;  }
 function get_canvas_height()  { return __canvas.height; }
 
 //------------------------------------------------------------------------------
-function set_main_canvas(canvas)
-{
+function set_main_canvas(canvas) {
     __canvas  = canvas;
     __context = canvas.getContext("2d");
 }
 
+//------------------------------------------------------------------------------
+function get_main_canvas        () { return __canvas;  }
+function get_main_canvas_context() { return __context; }
 
 //------------------------------------------------------------------------------
 function begin_draw() { __context.save   (); }
 function end_draw  () { __context.restore(); }
-
-
 
 //------------------------------------------------------------------------------
 function translate_canvas_to_center()
@@ -139,9 +141,11 @@ function draw_line(x1, y1, x2, y2)
 //------------------------------------------------------------------------------
 function canvas_render()
 {
+    // Update timers...
     __time_now = Date.now();
 
-    let dt = (__time_now - __time_prev) / 1000;
+    // Cap frame rate.
+    let dt = ((__time_now - __time_prev) / 1000);
     if(dt > MIN_FRAME_RATE) {
         dt = MIN_FRAME_RATE;
     }
@@ -151,8 +155,28 @@ function canvas_render()
     __time_total += dt;
     __time_delta  = dt;
 
-
+    // Call user update.
     __user_draw_func(dt);
+
+    // Add frames to gif.
+    if(gif_is_recording()) {
+        __gif.addFrame(
+            __context,
+            {   // @todo: This object can be cached???
+                copy: true,
+                delay: __gif_delay_ms
+            }
+        );
+
+        __gif_duration_s -= dt;
+        verbose_log(`Gif add frame - Remaining ${__gif_duration_s}`);
+
+        if(__gif_duration_s <= 0) {
+            gif_stop_record();
+        }
+    }
+
+    // Continue the loop.
     window.requestAnimationFrame(canvas_render);
 }
 
@@ -424,7 +448,158 @@ function Vector_Sub(a, b)
 
 
 
+//----------------------------------------------------------------------------//
+// Gif                                                                        //
+//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+let __gif              = null;
+let __is_recording_gif = false;
+let __gif_FPS          = 0;                     // in frames
+let __gif_duration_s   = 0;                    // in seconds
+let __gif_delay_ms     = 0;
 
+
+//------------------------------------------------------------------------------
+function gif_is_recording()
+{
+    return __gif && __is_recording_gif && __gif_duration_s > 0;
+}
+
+//------------------------------------------------------------------------------
+function gif_setup_listeners()
+{
+    window.addEventListener('keydown', (event) => {
+        if(event.shiftKey && event.code == "F1") {  // shift+F1
+            gif_create();
+        }
+    });
+}
+
+//------------------------------------------------------------------------------
+function gif_create()
+{
+    if(__gif) {
+        error_log("Gif is already created");
+    }
+
+    __gif = new GIF({
+        workers:      5,
+        quality:      10,
+        width:        get_canvas_width (),
+        height:       get_canvas_height(),
+        workerScript: "/modules/demolib/modules/external/gif.js/dist/gif.worker.js",
+    });
+
+    {
+        __gif.dom = document.createElement('div');
+        __gif.dom.innerHTML = `
+            <div class="gif-recorder-container">
+                <div>
+                    <span>Gif</span>
+                </div>
+
+                <div>
+                    <span>Duration</span>
+                    <input id="gifDuration" type="text" value="5" size="2"/>
+                </div>
+
+                <div>
+                    <span>FPS</span>
+                    <input id="gifFPS" type="text" value="60" size="2"/>
+                </div>
+
+                <div>
+                    <button id="gifButton" onclick="gif_start_record()">Record</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(__gif.dom);
+    }
+}
+
+//------------------------------------------------------------------------------
+function gif_start_record(duration, fps)
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    // Get the values of the duration and fps from the inputs... (if available)
+    if(!duration) {
+        const input = document.getElementById("gifDuration");
+        if(!input) {
+            error_log("Missing gifDuration input");
+        }
+
+        duration = input.value;
+    }
+
+    if(!fps) {
+        const input = document.getElementById("gifFPS");
+        if(!input) {
+            error_log("Missing gifFPS input");
+        }
+
+        fps = input.value;
+    }
+
+    // Change the Button
+    const button = document.getElementById("gifButton");
+    if(button) {
+        button.innerHTML = "Recording...";
+        button.disabled  = true;
+    }
+
+    //
+    __is_recording_gif = true;
+    __gif_FPS          = fps;
+    __gif_duration_s   = duration;
+    __gif_delay_ms     = (1 / __gif_FPS) * 1000; // in milliseconds
+}
+
+//------------------------------------------------------------------------------
+function gif_stop_record()
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    __is_recording_gif = false;
+
+
+    // Change the Button
+    const button = document.getElementById("gifButton");
+    if(button) {
+        button.innerHTML = "Export";
+        button.disabled  = false;
+
+        button.onclick = ()=> {
+            button.innerHTML = "Exporting...";
+            button.disabled  = false;
+
+            gif_save();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+function gif_save()
+{
+    if(!__gif) {
+        error_log("Gif must be created");
+    }
+
+    __gif.on("finished", function(blob) {
+        verbose_log("Gif finished");
+        window.open(URL.createObjectURL(blob));
+
+        document.body.removeChild(__gif.dom);
+        __gif = null;
+    });
+
+    __gif.render();
+}
 
 /*
 
