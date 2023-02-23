@@ -6,8 +6,14 @@ function is_null_or_undefined(v)
 {
     return (v === null || v === undefined);
 }
-const echo = console.log
 
+//------------------------------------------------------------------------------
+const echo        = console.log; // Muscle Memory :)
+const verbose_log = console.log; // @TODO: Make a way to remove this from dist...
+const error_log   = (...args) => {
+    console.error(...args); // @TODO: Make a way to remove this from dist...
+    debugger;
+}
 //----------------------------------------------------------------------------//
 // Loop                                                                       //
 //----------------------------------------------------------------------------//
