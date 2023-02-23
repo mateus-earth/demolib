@@ -487,7 +487,7 @@ function gif_create()
         quality:      10,
         width:        get_canvas_width (),
         height:       get_canvas_height(),
-        workerScript: "/modules/demolib/modules/external/gif.js/dist/gif.worker.js",
+        workerScript: "/modules/demolib/modules/external/gif.js/gif.worker.js",
     });
 
     {
