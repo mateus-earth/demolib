@@ -10,6 +10,13 @@ function is_null_or_undefined(v)
     return (v === null || v === undefined);
 }
 
+function create_2d_array(rows, cols) {
+    const arr = new Array(rows);
+    for(let i = 0; i < rows; ++i) {
+        arr[i] = new Array(cols);
+    }
+    return arr;
+}
 
 //
 // Log
@@ -162,17 +169,12 @@ function clear_canvas_rect(x, y, w, h, color)
 function set_canvas_fill      (color) { __context.fillStyle   = color; }
 function set_canvas_stroke    (color) { __context.strokeStyle = color; }
 function set_canvas_line_width(width) { __context.lineWidth   = width; }
+function set_canvas_stroke_size(size) { __context.lineWidth = size; }
 
 
 //
 // Fill Functions
 //
-
-//------------------------------------------------------------------------------
-function set_canvas_stroke_size(size)
-{
-    __context.lineWidth = size;
-}
 
 //------------------------------------------------------------------------------
 function fill_circle(x, y, r)
