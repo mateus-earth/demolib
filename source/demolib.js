@@ -31,6 +31,11 @@ const error_log   = (...args) => {
 //------------------------------------------------------------------------------
 class Min_Max
 {
+    static from_two_values(val1, val2)
+    {
+        return new Min_Max(Math.min(val1, val2), Math.max(val1, val2));
+    }
+
     constructor(min, max)
     {
         this.min = min;
