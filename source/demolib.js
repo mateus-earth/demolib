@@ -191,6 +191,20 @@ function fill_arc(x, y, r, sa, ea, close)
     __context.fill();
 }
 
+//------------------------------------------------------------------------------
+function fill_rect(x, y, w, h)
+{
+    if(w <= 0 || h <= 0) {
+        return;
+    }
+
+    __context.beginPath();
+        __context.rect(x, y, w, h);
+    __context.closePath();
+    __context.fill();
+}
+
+
 
 //------------------------------------------------------------------------------
 function canvas_render() // @todo: make private
@@ -1810,18 +1824,6 @@ function Canvas_DrawRect(x, y, w, h)
     __context.stroke();
 }
 
-//------------------------------------------------------------------------------
-function Canvas_FillRect(x, y, w, h)
-{
-    if(w <= 0 || h <= 0) {
-        return;
-    }
-
-    __context.beginPath();
-        __context.rect(x, y, w, h);
-    __context.closePath();
-    __context.fill();
-}
 
 //------------------------------------------------------------------------------
 let _Canvas_ImageData = null;
