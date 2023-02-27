@@ -1148,7 +1148,9 @@ class Tween
     //--------------------------------------------------------------------------
     delay(amount)
     {
-        this._delay_time = amount;
+        this._delay_time     = amount;
+        this._delay_to_start = amount;
+
         return this;
     }
 
