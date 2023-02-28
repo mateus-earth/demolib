@@ -111,6 +111,19 @@ let __canvas  = null;
 let __context = null;
 
 //------------------------------------------------------------------------------
+function get_canvas_size()
+{
+    const w = get_canvas_width ();
+    const h = get_canvas_height()
+
+    const v = Min_Max.from_two_values(w, h);
+    v.width  = w;
+    v.height = h;
+
+    return v;
+
+}
+
 function get_canvas_width (s = 1)  { return __canvas.width  * s; }
 function get_canvas_height(s = 1)  { return __canvas.height * s; }
 function get_context() { return __context; }
@@ -136,6 +149,12 @@ function translate_canvas_to_center()
         __canvas.width  * 0.5,
         __canvas.height * 0.5
     );
+}
+
+//------------------------------------------------------------------------------
+function translate_canvas(x, y)
+{
+    __context.translate(x, y);
 }
 
 //------------------------------------------------------------------------------
@@ -492,11 +511,16 @@ function install_input_handlers(element, handlers)
 const MATH_PI  = Math.PI;
 const MATH_2PI = MATH_PI * 2;
 
+const HALF_PI =  Math.PI * 0.5;
+const TWO_PI  =  Math.PI * 2.0;
+
 const    to_int        = Math.trunc;
+function int_mod(a, b) { return to_int(to_int(a) / to_int(b)) }
 
 //------------------------------------------------------------------------------
 function to_radians(degrees) { return degrees * (MATH_PI/180.0); }
 function to_degrees(radians) { return radians * (180.0/MATH_PI); }
+
 
 //------------------------------------------------------------------------------
 function direction(x1, y1, x2, y2)
@@ -1697,10 +1721,6 @@ function Canvas_SetOrigin(x, y)
 }
 
 //------------------------------------------------------------------------------
-function Canvas_Translate(x, y)
-{
-    __context.translate(x, y);
-}
 
 //------------------------------------------------------------------------------
 function Canvas_Rotate(a)
