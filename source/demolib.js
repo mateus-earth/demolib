@@ -10,12 +10,93 @@ function is_null_or_undefined(v)
     return (v === null || v === undefined);
 }
 
+//------------------------------------------------------------------------------
 function create_2d_array(rows, cols) {
     const arr = new Array(to_int(rows));
     for(let i = 0; i < rows; ++i) {
         arr[i] = new Array(to_int(cols));
     }
     return arr;
+}
+
+
+//
+// Offscreen
+//
+class Offscreen_Context {
+    static create_canvas(width, height, will_read_freq) {
+        const oc = new Offscreen_Context();
+
+        oc.canvas  = document.createElement("canvas");
+        oc.context = oc.canvas.getContext("2d", { willReadFrequently: will_read_freq });
+
+        oc.canvas.width  = width;
+        oc.canvas.height = height;
+
+        return oc;
+    }
+
+    //------------------------------------------------------------------------------
+    lock_pixels()
+    {
+        if(this.__canvas_image_data != null) {
+            return;
+        }
+
+        this.__canvas_image_data = this.context.getImageData(
+            0, 0, this.canvas.width,  this.canvas.height
+        );
+    }
+
+    //------------------------------------------------------------------------------
+    unlock_pixels()
+    {
+        if(this.__canvas_image_data == null) {
+            return;
+        }
+
+        this.context.putImageData(this.__canvas_image_data, 0, 0);
+        this.canvas_image_data = null;
+    }
+
+    //------------------------------------------------------------------------------
+    set_pixel(x, y, color)
+    {
+        // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
+        function get_pixel_index(x, y, width) {
+            let red = y * (width * 4) + x * 4;
+            return [red, red + 1, red + 2, red + 3];
+        }
+
+        let indices = get_pixel_index(x, y, this.canvas.width);
+
+        this.__canvas_image_data.data[indices[0]] = color[0];
+        this.__canvas_image_data.data[indices[1]] = color[1];
+        this.__canvas_image_data.data[indices[2]] = color[2];
+        this.__canvas_image_data.data[indices[3]] = color[3];
+    }
+
+}
+
+//------------------------------------------------------------------------------
+function calculate_offscreen_canvas_max_size(
+    screen_width,
+    screen_height,
+    pixel_count
+) {
+    const aspect_ratio = (screen_width / screen_height);
+    const max_size     = Math.sqrt(pixel_count * aspect_ratio);
+
+    const w_new = Math.min(max_size, screen_width);
+    const h_new = Math.min(max_size / aspect_ratio, screen_height);
+
+    return [to_int(w_new), to_int(h_new)];
+}
+
+//------------------------------------------------------------------------------
+function create_offscreen_context(...args)
+{
+    return Offscreen_Context.create_canvas(...args)
 }
 
 //
@@ -113,8 +194,8 @@ let __context = null;
 //------------------------------------------------------------------------------
 function get_canvas_size()
 {
-    const w = get_canvas_width ();
-    const h = get_canvas_height()
+    const w = get_canvas_width();
+    const h = get_canvas_height();
 
     const v = Min_Max.from_two_values(w, h);
     v.width  = w;
@@ -124,14 +205,15 @@ function get_canvas_size()
 
 }
 
+//------------------------------------------------------------------------------
 function get_canvas_width (s = 1)  { return __canvas.width  * s; }
 function get_canvas_height(s = 1)  { return __canvas.height * s; }
 function get_context() { return __context; }
 
 //------------------------------------------------------------------------------
-function set_main_canvas(canvas) {
+function set_main_canvas(canvas, will_read_freq = false) {
     __canvas  = canvas;
-    __context = canvas.getContext("2d");
+    __context = canvas.getContext("2d", { willReadFrequently: will_read_freq });
 }
 
 //------------------------------------------------------------------------------
@@ -189,6 +271,50 @@ function set_canvas_fill      (color) { __context.fillStyle   = color; }
 function set_canvas_stroke    (color) { __context.strokeStyle = color; }
 function set_canvas_line_width(width) { __context.lineWidth   = width; }
 function set_canvas_stroke_size(size) { __context.lineWidth = size; }
+
+//------------------------------------------------------------------------------
+let __canvas_image_data = null;
+function lock_canvas_pixels()
+{
+    if(__canvas_image_data != null) {
+        return;
+    }
+
+    __canvas_image_data = __context.getImageData(
+        0, 0,
+        get_canvas_width (),
+        get_canvas_height()
+    );
+}
+
+//------------------------------------------------------------------------------
+function unlock_canvas_pixels()
+{
+    if(__canvas_image_data == null) {
+        return;
+    }
+
+    __context.putImageData(__canvas_image_data, 0, 0);
+    __canvas_image_data = null;
+}
+
+//------------------------------------------------------------------------------
+function set_canvas_pixel(x, y, color)
+{
+    // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
+    function get_pixel_index(x, y, width) {
+        let red = y * (width * 4) + x * 4;
+        return [red, red + 1, red + 2, red + 3];
+    }
+
+    let indices = get_pixel_index(x, y, get_canvas_width());
+
+    __canvas_image_data.data[indices[0]] = color[0];
+    __canvas_image_data.data[indices[1]] = color[1];
+    __canvas_image_data.data[indices[2]] = color[2];
+    __canvas_image_data.data[indices[3]] = color[3];
+}
+
 
 
 //
@@ -415,7 +541,7 @@ function perlin_noise(x, y = 0, z = 0)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //------------------------------------------------------------------------------
-let __mouse_pos          = null;
+let __mouse_pos          = make_vec2();
 let __mouse_left_pressed = false;
 
 let __mouse_wheel_x = 0;
@@ -1515,7 +1641,7 @@ function gif_create()
     __gif = new GIF({
         workers:      5,
         quality:      10,
-        width:        get_canvas_width (),
+        width:        get_canvas_width(),
         height:       get_canvas_height(),
         workerScript: "/modules/demolib/modules/external/gif.js/gif.worker.js",
     });
@@ -1645,11 +1771,11 @@ function Canvas_Resize(width, height)
     MainContext.width  = width;
     MainContext.height = height;
 
-    Canvas_Width  = width;
-    Canvas_Height = height;
+    get_canvas_width()  = width;
+    get_canvas_height() = height;
 
-    Canvas_Half_Width  = Math_Int(Canvas_Width  / 2);
-    Canvas_Half_Height = Math_Int(Canvas_Height / 2);
+    Canvas_Half_Width  = Math_Int(get_canvas_width()  / 2);
+    Canvas_Half_Height = Math_Int(get_canvas_height() / 2);
 
     Canvas_Edge_Left    = -Canvas_Half_Width;
     Canvas_Edge_Right   = +Canvas_Half_Width;
@@ -1847,44 +1973,6 @@ function Canvas_DrawRect(x, y, w, h)
 }
 
 
-//------------------------------------------------------------------------------
-let _Canvas_ImageData = null;
-function Canvas_LockPixels()
-{
-    if(_Canvas_ImageData != null) {
-        return;
-    }
-
-    _Canvas_ImageData = __context.getImageData(0, 0, Canvas_Width, Canvas_Height);
-}
-
-//------------------------------------------------------------------------------
-function Canvas_UnlockPixels()
-{
-    if(_Canvas_ImageData == null) {
-        return;
-    }
-
-    __context.putImageData(_Canvas_ImageData, 0, 0);
-    _Canvas_ImageData = null;
-}
-
-//------------------------------------------------------------------------------
-function Canvas_SetColor(x, y, color)
-{
-    // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas
-    function get_pixel_index(x, y, width) {
-        let red = y * (width * 4) + x * 4;
-        return [red, red + 1, red + 2, red + 3];
-    }
-
-    let indices = get_pixel_index(x, y, Canvas_Width);
-
-    _Canvas_ImageData.data[indices[0]] = color[0];
-    _Canvas_ImageData.data[indices[1]] = color[1];
-    _Canvas_ImageData.data[indices[2]] = color[2];
-    _Canvas_ImageData.data[indices[3]] = color[3];
-}
 
 //------------------------------------------------------------------------------
 function Canvas_RenderTextAt(x, y, str, fontSize, fontName, centered = false)
