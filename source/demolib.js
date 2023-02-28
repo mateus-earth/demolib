@@ -11,9 +11,9 @@ function is_null_or_undefined(v)
 }
 
 function create_2d_array(rows, cols) {
-    const arr = new Array(rows);
+    const arr = new Array(to_int(rows));
     for(let i = 0; i < rows; ++i) {
-        arr[i] = new Array(cols);
+        arr[i] = new Array(to_int(cols));
     }
     return arr;
 }
